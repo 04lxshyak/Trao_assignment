@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -171,8 +169,8 @@ public class GeminiTripPlannerService {
     }
 
     private String callGemini(String prompt) {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s"
-                .formatted(model, URLEncoder.encode(apiKey, StandardCharsets.UTF_8));
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent"
+                .formatted(model);
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt)))),
@@ -184,6 +182,7 @@ public class GeminiTripPlannerService {
 
         String response = restClient.post()
                 .uri(url)
+                .header("x-goog-api-key", apiKey)
                 .body(body)
                 .retrieve()
                 .body(String.class);
