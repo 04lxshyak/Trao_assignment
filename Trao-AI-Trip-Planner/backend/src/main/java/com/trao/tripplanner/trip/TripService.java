@@ -1,6 +1,7 @@
 package com.trao.tripplanner.trip;
 
 import com.trao.tripplanner.ai.GeminiTripPlannerService;
+import com.trao.tripplanner.common.NotFoundException;
 import com.trao.tripplanner.user.User;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +94,7 @@ public class TripService {
 
     private Trip findOwnedTrip(User user, String tripId) {
         return tripRepository.findByIdAndUserId(tripId, user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Trip not found."));
+                .orElseThrow(() -> new NotFoundException("Trip not found."));
     }
 
     private ItineraryDay findDay(Trip trip, int dayNumber) {

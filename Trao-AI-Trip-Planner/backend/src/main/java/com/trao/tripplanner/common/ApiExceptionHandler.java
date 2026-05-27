@@ -19,6 +19,11 @@ public class ApiExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> notFound(NotFoundException exception) {
+        return build(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> forbidden(AccessDeniedException exception) {
         return build(HttpStatus.FORBIDDEN, exception.getMessage());
