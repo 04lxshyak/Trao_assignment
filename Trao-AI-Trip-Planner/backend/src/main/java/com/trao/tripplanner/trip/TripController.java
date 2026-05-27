@@ -29,6 +29,25 @@ public class TripController {
         return tripService.getTrip(user, tripId);
     }
 
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public TripResponse generateTrip(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody GenerateTripRequest request
+    ) {
+        return tripService.generateTrip(user, request);
+    }
+
+    @PostMapping("/{tripId}/days/{dayNumber}/regenerate")
+    public TripResponse regenerateDay(
+            @AuthenticationPrincipal User user,
+            @PathVariable String tripId,
+            @PathVariable int dayNumber,
+            @Valid @RequestBody RegenerateDayRequest request
+    ) {
+        return tripService.regenerateDay(user, tripId, dayNumber, request);
+    }
+
     @PostMapping("/{tripId}/days/{dayNumber}/activities")
     public TripResponse addActivity(
             @AuthenticationPrincipal User user,

@@ -1,5 +1,6 @@
 package com.trao.tripplanner.trip;
 
+import com.trao.tripplanner.ai.GeminiTripPlannerService;
 import com.trao.tripplanner.user.User;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,11 @@ import static com.trao.tripplanner.trip.TripDtos.*;
 @Service
 public class TripService {
     private final TripRepository tripRepository;
+    private final GeminiTripPlannerService geminiTripPlannerService;
 
-    public TripService(TripRepository tripRepository) {
+    public TripService(TripRepository tripRepository, GeminiTripPlannerService geminiTripPlannerService) {
         this.tripRepository = tripRepository;
+        this.geminiTripPlannerService = geminiTripPlannerService;
     }
 
     public List<TripSummaryResponse> listTrips(User user) {
@@ -26,6 +29,17 @@ public class TripService {
 
     public TripResponse getTrip(User user, String tripId) {
         return TripMapper.toResponse(findOwnedTrip(user, tripId));
+    }
+
+    public TripResponse generateTrip(User user, GenerateTripRequest request) {
+        Trip generatedTrip = geminiTripPlannerService.generateTrip(request);
+        return TripMapper.toResponse(saveGeneratedTrip(user, request, generatedTrip));
+    }
+
+    public TripResponse regenerateDay(User user, String tripId, int dayNumber, RegenerateDayRequest request) {
+        Trip trip = findOwnedTrip(user, tripId);
+        ItineraryDay regeneratedDay = geminiTripPlannerService.regenerateDay(trip, dayNumber, request);
+        return TripMapper.toResponse(replaceGeneratedDay(user, tripId, dayNumber, regeneratedDay));
     }
 
     public TripResponse addActivity(User user, String tripId, int dayNumber, AddActivityRequest request) {
