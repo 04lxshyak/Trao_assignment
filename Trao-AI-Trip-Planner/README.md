@@ -1,17 +1,15 @@
 # Trao AI Trip Planner
 
-Backend-first implementation for the Trao full-stack engineering assessment.
-
-Current status: the Spring Boot backend is implemented. The frontend will be added separately.
+Full-stack implementation for the Trao engineering assessment.
 
 ## Tech Stack
 
-- Java 17
-- Spring Boot 3
-- Spring Security with JWT
-- MongoDB
-- Google Gemini API
-- Maven
+- Frontend: Next.js, React, TypeScript, Tailwind CSS
+- Backend: Java 17, Spring Boot 3
+- Security: Spring Security, JWT, BCrypt
+- Database: MongoDB
+- AI: Google Gemini API
+- Tooling: Maven, npm
 
 ## Backend Features
 
@@ -28,6 +26,19 @@ Current status: the Spring Boot backend is implemented. The frontend will be add
 - Regenerate a specific itinerary day
 - Custom creative feature: Trip Quality Review
 
+## Frontend Features
+
+- Register and login screens
+- Authenticated dashboard
+- Trip generation form
+- Saved trip list
+- Trip detail page
+- Day-by-day itinerary view
+- Add and remove activities
+- Regenerate a specific day with custom instructions
+- Budget, hotel, and trip quality review panels
+- Responsive Tailwind UI with accessible form controls and icon buttons
+
 ## Architecture
 
 ```text
@@ -39,6 +50,14 @@ backend/
     trip/       trip documents, DTOs, controller, service
     ai/         Gemini itinerary generation service
     common/     API error handling
+frontend/
+  src/app/
+    login/      login route
+    register/   registration route
+    dashboard/  authenticated trip dashboard
+    trips/[id]/ trip detail and editing route
+  src/components/
+  src/lib/
 ```
 
 The controller layer accepts validated requests. The service layer owns business rules and authorization-safe lookups. The repository layer only exposes user-scoped reads for trip data.
@@ -60,11 +79,18 @@ GEMINI_MODEL=gemini-2.5-flash
 
 Never commit a real `.env` file. The repository intentionally tracks only `.env.example`.
 
+Create frontend environment variables from `frontend/.env.example`.
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
 ## Local Setup
 
-From the backend folder:
+Backend:
 
 ```bash
+cd backend
 mvn test
 mvn spring-boot:run
 ```
@@ -79,6 +105,20 @@ Health check:
 
 ```text
 GET /actuator/health
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs on:
+
+```text
+http://localhost:3000
 ```
 
 ## API Overview
@@ -163,13 +203,29 @@ Trips are always read with `findByIdAndUserId` or `findByUserIdOrderByUpdatedAtD
 
 ## Deployment Notes
 
-Recommended backend deployment:
+Recommended deployment:
 
-- Render, Railway, or Fly.io
-- Java 17 runtime
-- MongoDB Atlas connection string in `MONGODB_URI`
-- Gemini key in `GEMINI_API_KEY`
-- Frontend URL in `CORS_ALLOWED_ORIGINS`
+- Backend: Render using `render.yaml`
+- Frontend: Vercel with project root set to `frontend`
+- Database: MongoDB Atlas
+- AI: Gemini API key stored as a secret environment variable
+
+Backend environment variables on Render:
+
+```env
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=long-random-production-secret
+JWT_EXPIRATION_MINUTES=10080
+CORS_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
+GEMINI_API_KEY=your-gemini-key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+Frontend environment variables on Vercel:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://your-render-api.onrender.com
+```
 
 ## Verification
 
@@ -180,9 +236,18 @@ mvn test
 Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
 ```
 
+Current frontend verification:
+
+```text
+npm run build
+Next.js production build completed successfully.
+npm audit
+0 vulnerabilities
+```
+
 ## Known Limitations
 
-- Frontend is not implemented yet.
 - No refresh token flow yet; JWT expiry is controlled with `JWT_EXPIRATION_MINUTES`.
 - Live Gemini behavior depends on the configured API key, model availability, and quota.
 - End-to-end API tests with MongoDB Testcontainers can be added after the backend surface stabilizes.
+- Public deployment URLs and walkthrough video must be produced after the app is deployed with your platform accounts.
