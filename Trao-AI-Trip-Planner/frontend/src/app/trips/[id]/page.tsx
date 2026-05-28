@@ -17,9 +17,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, use, useEffect, useMemo, useState } from "react";
 
-export default function TripDetailPage({ params }: { params: { id: string } }) {
+export default function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: tripId } = use(params);
   const router = useRouter();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [error, setError] = useState("");
@@ -37,14 +38,14 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     api
-      .getTrip(params.id)
+      .getTrip(tripId)
       .then((loadedTrip) => {
         setTrip(loadedTrip);
         setActiveDay(loadedTrip.itinerary[0]?.dayNumber ?? 1);
       })
       .catch((exception) => setError(exception instanceof Error ? exception.message : "Unable to load trip"))
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [tripId]);
 
   const selectedDay = useMemo(
     () => trip?.itinerary.find((day) => day.dayNumber === activeDay) ?? trip?.itinerary[0],
@@ -55,7 +56,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
     setError("");
     setBusy(`regen-${day.dayNumber}`);
     try {
-      const updated = await api.regenerateDay(params.id, day.dayNumber, instruction || "Improve this day.");
+      const updated = await api.regenerateDay(tripId, day.dayNumber, instruction || "Improve this day.");
       setTrip(updated);
       setInstruction("");
     } catch (exception) {
@@ -73,7 +74,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
     setError("");
     setBusy("add");
     try {
-      const updated = await api.addActivity(params.id, selectedDay.dayNumber, activity);
+      const updated = await api.addActivity(tripId, selectedDay.dayNumber, activity);
       setTrip(updated);
       setActivity({ timeOfDay: "Evening", title: "", description: "", category: "Custom", estimatedCost: 0 });
     } catch (exception) {
@@ -87,7 +88,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
     setError("");
     setBusy(activityId);
     try {
-      setTrip(await api.removeActivity(params.id, dayNumber, activityId));
+      setTrip(await api.removeActivity(tripId, dayNumber, activityId));
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Unable to remove activity");
     } finally {
@@ -98,7 +99,7 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
   async function deleteTrip() {
     setBusy("delete");
     try {
-      await api.deleteTrip(params.id);
+      await api.deleteTrip(tripId);
       router.replace("/dashboard");
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : "Unable to delete trip");

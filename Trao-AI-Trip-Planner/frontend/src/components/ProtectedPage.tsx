@@ -3,21 +3,19 @@
 import { AppHeader } from "@/components/AppHeader";
 import { getToken } from "@/lib/session";
 import { useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 
 export function ProtectedPage({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const hasToken = Boolean(getToken());
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasToken) {
       router.replace("/login");
-      return;
     }
-    setReady(true);
-  }, [router]);
+  }, [hasToken, router]);
 
-  if (!ready) {
+  if (!hasToken) {
     return <main className="page-shell min-h-screen" />;
   }
 

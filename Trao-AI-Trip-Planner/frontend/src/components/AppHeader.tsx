@@ -4,15 +4,10 @@ import { clearSession, getSessionUser } from "@/lib/session";
 import { LogOut, Map, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export function AppHeader() {
   const router = useRouter();
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    setName(getSessionUser()?.name ?? "");
-  }, []);
+  const name = getSessionUser()?.name ?? "";
 
   function logout() {
     clearSession();
