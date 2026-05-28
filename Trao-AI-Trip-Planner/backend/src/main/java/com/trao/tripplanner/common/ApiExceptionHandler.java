@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -14,6 +16,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> badRequest(IllegalArgumentException exception) {
         return build(HttpStatus.BAD_REQUEST, exception.getMessage());
@@ -40,6 +44,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> unexpected(Exception exception) {
+        log.error("Unexpected API error", exception);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong. Please try again.");
     }
 

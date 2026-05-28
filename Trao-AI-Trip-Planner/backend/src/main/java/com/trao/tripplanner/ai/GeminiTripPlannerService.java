@@ -35,7 +35,7 @@ public class GeminiTripPlannerService {
 
     public Trip generateTrip(GenerateTripRequest request) {
         if (apiKey.isBlank()) {
-            return localDraftTrip(request);
+            return localDraftTrip(request, "Gemini API key is not configured, so this is a local draft.");
         }
 
         String prompt = """
@@ -116,9 +116,13 @@ public class GeminiTripPlannerService {
                 request.days()
         );
 
-        Trip trip = readJson(callGemini(prompt), Trip.class);
-        normalizeTrip(trip, request);
-        return trip;
+        try {
+            Trip trip = readJson(callGemini(prompt), Trip.class);
+            normalizeTrip(trip, request);
+            return trip;
+        } catch (RuntimeException exception) {
+            return localDraftTrip(request, "Gemini is temporarily unavailable, so this is a local draft.");
+        }
     }
 
     public ItineraryDay regenerateDay(Trip trip, int dayNumber, RegenerateDayRequest request) {
@@ -162,10 +166,14 @@ public class GeminiTripPlannerService {
                 dayNumber
         );
 
-        ItineraryDay day = readJson(callGemini(prompt), ItineraryDay.class);
-        day.setDayNumber(dayNumber);
-        normalizeDay(day);
-        return day;
+        try {
+            ItineraryDay day = readJson(callGemini(prompt), ItineraryDay.class);
+            day.setDayNumber(dayNumber);
+            normalizeDay(day);
+            return day;
+        } catch (RuntimeException exception) {
+            return localRegeneratedDay(trip, dayNumber, request.instruction());
+        }
     }
 
     private String callGemini(String prompt) {
@@ -253,7 +261,7 @@ public class GeminiTripPlannerService {
         }
     }
 
-    private Trip localDraftTrip(GenerateTripRequest request) {
+    private Trip localDraftTrip(GenerateTripRequest request, String warning) {
         Trip trip = new Trip();
         trip.setDestination(request.destination().trim());
         trip.setDays(request.days());
@@ -267,7 +275,7 @@ public class GeminiTripPlannerService {
         trip.setItinerary(days);
         trip.setBudgetEstimate(localBudget(request));
         trip.setHotels(localHotels(request));
-        trip.setQualityReview(localReview(request));
+        trip.setQualityReview(localReview(request, warning));
         return trip;
     }
 
@@ -344,14 +352,14 @@ public class GeminiTripPlannerService {
         return List.of(hotel);
     }
 
-    private TripQualityReview localReview(GenerateTripRequest request) {
+    private TripQualityReview localReview(GenerateTripRequest request, String warning) {
         TripQualityReview review = new TripQualityReview();
         review.setPaceScore(78);
         review.setBudgetFit("Draft plan is budget-aware but should be validated by Gemini for live recommendations.");
         review.setInterestMatch("Activities are balanced around " + request.interests());
         review.setRestBalance("Each day keeps evening flexible to avoid overplanning.");
         review.setStrengths(List.of("Editable structure", "Balanced daily pacing"));
-        review.setWarnings(List.of("Gemini API key is not configured, so this is a local draft."));
+        review.setWarnings(List.of(warning));
         review.setImprovementIdeas(List.of("Enable Gemini to produce destination-specific hotels and cost estimates."));
         return review;
     }
