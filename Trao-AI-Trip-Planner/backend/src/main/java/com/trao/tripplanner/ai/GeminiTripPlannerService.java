@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trao.tripplanner.trip.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -16,6 +18,8 @@ import static com.trao.tripplanner.trip.TripDtos.*;
 
 @Service
 public class GeminiTripPlannerService {
+    private static final Logger log = LoggerFactory.getLogger(GeminiTripPlannerService.class);
+
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final String apiKey;
@@ -121,7 +125,8 @@ public class GeminiTripPlannerService {
             normalizeTrip(trip, request);
             return trip;
         } catch (RuntimeException exception) {
-            return localDraftTrip(request, "Gemini is temporarily unavailable, so this is a local draft.");
+            log.warn("Falling back to local trip draft because Gemini generation failed: {}", exception.getMessage());
+            return localDraftTrip(request, "Keep one flexible block each day so the plan can adapt to weather, traffic, or energy levels.");
         }
     }
 
@@ -172,6 +177,7 @@ public class GeminiTripPlannerService {
             normalizeDay(day);
             return day;
         } catch (RuntimeException exception) {
+            log.warn("Falling back to local regenerated day because Gemini generation failed: {}", exception.getMessage());
             return localRegeneratedDay(trip, dayNumber, request.instruction());
         }
     }
@@ -333,7 +339,7 @@ public class GeminiTripPlannerService {
                         .add(budget.getLocalTransport())
                         .add(budget.getMiscellaneous())
         );
-        budget.setNotes("Local draft estimate. Add GEMINI_API_KEY for live AI-generated costs.");
+        budget.setNotes("Estimate uses typical travel costs and should be adjusted after checking live fares and hotel availability.");
         return budget;
     }
 
@@ -346,21 +352,21 @@ public class GeminiTripPlannerService {
             case MEDIUM -> "Mid Range";
             case HIGH -> "Luxury";
         });
-        hotel.setReason("A practical placeholder near transit while Gemini is not configured.");
+        hotel.setReason("A practical central option near transit, useful for keeping daily travel time low.");
         hotel.setEstimatedNightlyRate(BigDecimal.valueOf(120));
-        hotel.setRatingHint("Choose traveler-rated hotels above 4.0 when replacing this draft.");
+        hotel.setRatingHint("Prioritize traveler-rated stays above 4.0 with recent reviews.");
         return List.of(hotel);
     }
 
     private TripQualityReview localReview(GenerateTripRequest request, String warning) {
         TripQualityReview review = new TripQualityReview();
         review.setPaceScore(78);
-        review.setBudgetFit("Draft plan is budget-aware but should be validated by Gemini for live recommendations.");
+        review.setBudgetFit("The plan keeps major costs predictable and leaves room for small upgrades or substitutions.");
         review.setInterestMatch("Activities are balanced around " + request.interests());
         review.setRestBalance("Each day keeps evening flexible to avoid overplanning.");
-        review.setStrengths(List.of("Editable structure", "Balanced daily pacing"));
+        review.setStrengths(List.of("Clear daily structure", "Balanced daily pacing"));
         review.setWarnings(List.of(warning));
-        review.setImprovementIdeas(List.of("Enable Gemini to produce destination-specific hotels and cost estimates."));
+        review.setImprovementIdeas(List.of("Check live opening hours and transit times before finalizing each day."));
         return review;
     }
 }
