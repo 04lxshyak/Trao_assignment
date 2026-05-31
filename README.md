@@ -134,6 +134,3 @@ npm audit
 0 vulnerabilities
 ```
 
-## Notes
-
-The backend uses Spring Boot, matching the Java/Spring Boot backend path listed in the assessment brief. All other functional requirements remain covered. A 3-4 minute walkthrough video should be recorded and submitted with the repository and deployment links.
