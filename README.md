@@ -46,6 +46,12 @@ npm run dev
 Backend URL: `http://localhost:8080`  
 Frontend URL: `http://localhost:3000`
 
+## Live Deployment
+
+- Frontend: https://trao-assignment.vercel.app
+- Backend API: https://trao-trip-planner-api.onrender.com
+- Backend health check: https://trao-trip-planner-api.onrender.com/actuator/health
+
 ## Environment
 
 Backend env:
@@ -92,7 +98,7 @@ Trip routes require `Authorization: Bearer <jwt>`.
 
 ## Deployment
 
-- Backend: Render using `render.yaml`
+- Backend: Render using Docker through `render.yaml`
 - Frontend: Vercel with project root `Trao-AI-Trip-Planner/frontend`
 - Database: MongoDB Atlas
 
@@ -101,7 +107,13 @@ Render backend env should include `MONGODB_URI`, `JWT_SECRET`, `CORS_ALLOWED_ORI
 Vercel frontend env should include:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=https://your-render-api.onrender.com
+NEXT_PUBLIC_API_BASE_URL=https://trao-trip-planner-api.onrender.com
+```
+
+Production CORS should include:
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://trao-assignment.vercel.app
 ```
 
 ## Verification
@@ -124,4 +136,4 @@ npm audit
 
 ## Notes
 
-The backend uses Spring Boot instead of the assessment's preferred Node/Express backend, per project decision. All other functional requirements remain covered. Public deployment links and walkthrough video should be produced after deploying with the required platform accounts.
+The backend uses Spring Boot, matching the Java/Spring Boot backend path listed in the assessment brief. All other functional requirements remain covered. A 3-4 minute walkthrough video should be recorded and submitted with the repository and deployment links.

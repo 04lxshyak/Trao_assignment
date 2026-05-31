@@ -85,6 +85,12 @@ Create frontend environment variables from `frontend/.env.example`.
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
 
+## Live Deployment
+
+- Frontend: https://trao-assignment.vercel.app
+- Backend API: https://trao-trip-planner-api.onrender.com
+- Backend health check: https://trao-trip-planner-api.onrender.com/actuator/health
+
 ## Local Setup
 
 Backend:
@@ -205,7 +211,7 @@ Trips are always read with `findByIdAndUserId` or `findByUserIdOrderByUpdatedAtD
 
 Recommended deployment:
 
-- Backend: Render using `render.yaml`
+- Backend: Render using Docker through `render.yaml`
 - Frontend: Vercel with project root set to `frontend`
 - Database: MongoDB Atlas
 - AI: Gemini API key stored as a secret environment variable
@@ -216,7 +222,7 @@ Backend environment variables on Render:
 MONGODB_URI=mongodb+srv://...
 JWT_SECRET=long-random-production-secret
 JWT_EXPIRATION_MINUTES=10080
-CORS_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://trao-assignment.vercel.app
 GEMINI_API_KEY=your-gemini-key
 GEMINI_MODEL=gemini-2.5-flash
 ```
@@ -224,7 +230,7 @@ GEMINI_MODEL=gemini-2.5-flash
 Frontend environment variables on Vercel:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=https://your-render-api.onrender.com
+NEXT_PUBLIC_API_BASE_URL=https://trao-trip-planner-api.onrender.com
 ```
 
 ## Verification
@@ -233,7 +239,7 @@ Current backend verification:
 
 ```text
 mvn test
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 Current frontend verification:
@@ -250,4 +256,4 @@ npm audit
 - No refresh token flow yet; JWT expiry is controlled with `JWT_EXPIRATION_MINUTES`.
 - Live Gemini behavior depends on the configured API key, model availability, and quota.
 - End-to-end API tests with MongoDB Testcontainers can be added after the backend surface stabilizes.
-- Public deployment URLs and walkthrough video must be produced after the app is deployed with your platform accounts.
+- A 3-4 minute walkthrough video still needs to be recorded for final assessment submission.
